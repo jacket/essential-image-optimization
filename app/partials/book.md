@@ -5,7 +5,7 @@
 Image optimization should be automated. It’s easy to forget, best practices change, and content that doesn’t go through a build pipeline can easily slip.
 To automate: Use [imagemin](https://github.com/imagemin/imagemin) or [libvips](https://github.com/jcupitt/libvips) for your build process. Many alternatives exist.
 
-Most CDNs (e.g. [Akamai](https://www.akamai.com/us/en/solutions/why-akamai/image-management.jsp)) and third-party solutions like [Cloudinary](https://cloudinary.com), [imgix](https://imgix.com), [Fastly’s Image Optimizer](https://www.fastly.com/io/), [Instart Logic’s SmartVision](https://www.instartlogic.com/technology/machine-learning/smartvision) or [ImageOptim API](https://imageoptim.com/api) offer comprehensive automated image optimization solutions.
+Most CDNs (e.g. [Akamai](https://www.akamai.com/us/en/solutions/why-akamai/image-management.jsp)) and third-party solutions like [Cloudinary](https://cloudinary.com), [imgix](https://imgix.com), [Sirv](https://sirv.com), [Fastly’s Image Optimizer](https://www.fastly.com/io/), [Instart Logic’s SmartVision](https://www.instartlogic.com/technology/machine-learning/smartvision) or [ImageOptim API](https://imageoptim.com/api) offer comprehensive automated image optimization solutions.
 
 The amount of time you’ll spend reading blog posts and tweaking your configuration is greater than the monthly fee for a service (Cloudinary has a [free](http://cloudinary.com/pricing) tier). If you don’t want to outsource this work for cost or latency concerns, the open-source options above are solid. Projects like [Imageflow](https://github.com/imazen/imageflow) or [Thumbor](https://github.com/thumbor/thumbor) enable self-hosted alternatives.
 
@@ -710,7 +710,7 @@ Modern JPEG encoders attempt to produce smaller, higher fidelity JPEG files whil
 * If you need configurability:
  * [JPEGRecompress](https://github.com/danielgtaylor/jpeg-archive) (which uses MozJPEG under the hood)
  * [JPEGMini](http://www.jpegmini.com/). It’s similar to Guetzli – chooses best quality automatically. It’s not as technically sophisticated as Guetzli, but it’s faster, and aims at quality range more suitable for the web.
- * [ImageOptim API](https://imageoptim.com/api) (with free online interface [here](https://imageoptim.com/online)) – it’s unique in its handling of color. You can choose color quality separately from overall quality. It automatically chooses chroma subsampling level to preserve high-res colors in screenshots, but avoid waste bytes on smooth colors in natural photos.
+ * [ImageOptim API](https://imageoptim.com/api) (with free online interface [here](https://imageoptim.com/online)) – it’s unique in its handling of color. You can choose color quality separately from overall quality. It automatically chooses chroma a subsampling level which preserves high-res colors in screenshots, while avoiding wasted bytes on smooth colors in natural photos.
 
 
 ### <a id="what-is-mozjpeg" href="#what-is-mozjpeg">What is MozJPEG?</a>
@@ -1449,11 +1449,13 @@ Here is some sample HTML:
 
 **Automatic CDN conversion to WebP**
 
-Some CDNs support automated conversion to WebP and can use client hints to serve up WebP images [whenever possible](http://cloudinary.com/documentation/responsive_images#automating_responsive_images_with_client_hints). Check with your CDN to see if WebP support is included in their service. You may have an easy solution just waiting for you.
+Some CDNs support [automated conversion to WebP](https://sirv.com/blog/optimal-image-format/) as standard. Others support client hints to serve up WebP images [whenever possible](http://cloudinary.com/documentation/responsive_images#automating_responsive_images_with_client_hints). Check with your CDN to see if WebP support is included in their service. You may have an easy solution just waiting for you.
 
 **WordPress WebP support**
 
 **Jetpack** — Jetpack, a popular WordPress plugin, includes a CDN image service called [Photon](https://jetpack.com/support/photon/). With Photon you get seamless WebP image support. The Photon CDN is included in Jetpack's free level, so this is a good value and a hands-off implementation. The drawback is that Photon resizes your image, puts a query string in your URL and there is an extra DNS lookup required for each image.
+
+**[Sirv](https://wordpress.org/plugins/sirv/)** — a WordPress plugin that includes a CDN service. It automatically keeps in sync with your WordPress media library, delivering them as optimized images in the most optimal format (WebP when possible). It's free for up to 500MB storage.
 
 **Cache Enabler and Optimizer** — If you are using WordPress, there is at least one halfway-open source option. The open source plugin [Cache Enabler](https://wordpress.org/plugins/cache-enabler/) has a menu checkbox option for caching WebP images to be served if available and the current user’s browser supports them. This makes serving WebP images easy. There is a drawback: Cache Enabler requires the use of a sister program called Optimizer, which has an annual fee. This seems out of character for a genuinely open source solution.  
 
@@ -1461,7 +1463,7 @@ Some CDNs support automated conversion to WebP and can use client hints to serve
 
 **Compressing Animated GIFs and why `<video>` is better**
 
-Animated GIFs continue to enjoy widespread use, despite being a very limited format. Although everything from social networks to popular media sites embed animated GIFs heavily, the format was *never* designed for video storage or animation. In fact, the [GIF89a spec](https://www.w3.org/Graphics/GIF/spec-gif89a.txt) notes ‘the GIF is not intended as a platform for animation’. The [number of colors, number of frames and dimensions](http://gifbrewery.tumblr.com/post/39564982268/can-you-recommend-a-good-length-of-clip-to-keep-gifs) all impact animated GIF size. Switching to video offers the largest savings.  
+Animated GIFs continue to enjoy widespread use, despite being a very limited format. Although everything from social networks to popular media sites embed animated GIFs heavily, the format was *never* designed for video storage or animation. In fact, the [GIF89a spec](https://www.w3.org/Graphics/GIF/spec-gif89a.txt) notes ‘the GIF is not intended as a platform for animation’. The [number of colors, number of frames and dimensions](http://gifbrewery.tumblr.com/post/39564982268/can-you-recommend-a-good-length-of-clip-to-keep-gifs) all impact animated GIF size. Switching to video offers the largest savings.
 
 
 <figure>
@@ -2070,7 +2072,13 @@ Earlier versions of Chrome did not have great support for color management, but 
 
 Under HTTP/1.x, some developers used spriting to reduce HTTP requests. This came with a number of benefits, however care was needed as you quickly ran into challenges with cache-invalidation – changes to any small part of an image sprite would invalidate the entire image in a user’s cache.
 
-Spriting may now however be an [HTTP/2](https://hpbn.co/http2/) anti-pattern. With HTTP/2, it may be best to [load individual images](https://deliciousbrains.com/performance-best-practices-http2/) since multiple requests within a single connection are now possible. Measure to evaluate whether this is the case for your own network setup.
+Spriting may now however be an [HTTP/2](https://hpbn.co/http2/) anti-pattern. With HTTP/2, it may be best to [load individual images](https://deliciousbrains.com/performance-best-practices-http2/) since multiple requests within a single TCP connection are now possible (known as multiplexing). Measure to evaluate whether this is the case for your own network setup.
+
+## <a id="http2-and-progressive-jpeg" href="#http2-and-progressive-jpeg">HTTP/2 and progressive JPEG</a>
+
+If you serve images over HTTP/2, multiplexing is particularly beneficial for progressive and interlaced images. The initial layer of a progressive JPEG is fetched first, so it can feel like all images on the page are loading fast and simultaneously.
+
+If there are any high priority images on the page, you can further optimize the experience with HTTP/2 server push. Prior to the browser requesting a progressive JPEG, you can [push specific layers](https://calendar.perfplanet.com/2016/even-faster-images-using-http2-and-progressive-jpegs/) of it to the browser, so they are pre-cached. This can give a perception of almost instantaneous loading, helping users quickly engage with your content.
 
 ## <a id="lazy-load-non-critical-images" href="#lazy-load-non-critical-images">Lazy-load non-critical images</a>
 
